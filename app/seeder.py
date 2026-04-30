@@ -1,56 +1,59 @@
 from sqlalchemy.orm import Session
-from .database import SessionLocal, engine, Base
-from .models.user import User  # <-- UDAH GUA GANTI
+from .database import SessionLocal
+from . import models
 from .auth import get_password_hash
-import os
-from dotenv import load_dotenv
-from faker import Faker
 
-load_dotenv()
-fake = Faker('id_ID')
-
-def seed_admin():
-    Base.metadata.create_all(bind=engine)
-    db: Session = SessionLocal()
-    
-    # 1. SEED ADMIN
-    admin_email = os.getenv("SEEDER_ADMIN_EMAIL", "admin@jhon.com")
-    admin_pass = os.getenv("SEEDER_ADMIN_PASS", "admin123")
-    
-    admin_exist = db.query(User).filter(User.email == admin_email).first()
-    if not admin_exist:
-        admin_user = User(
-            nama="Super Admin Jhon",
-            email=admin_email, 
-            umur=99,
-            password=get_password_hash(admin_pass),
-            role="admin"
-        )
-        db.add(admin_user)
-        print(f"✅ Admin {admin_email} dibuat")
-    else:
-        print(f"⚠️  Admin {admin_email} udah ada, skip")
-
-    # 2. SEED 10 USER RANDOM
-    user_count = db.query(User).filter(User.role == "user").count()
-    if user_count < 10:
-        print("🔄 Bikin 10 user dummy...")
-        for i in range(10 - user_count):
-            user = User(
-                nama=fake.name(),
-                email=fake.unique.email(),
-                umur=fake.random_int(17, 60),
-                password=get_password_hash("password"),
-                role="user"
+def seed_data():
+    db = SessionLocal()
+    try:
+        # 1. Bikin Instructor kalo belum ada
+        instructor = db.query(models.User).filter(models.User.email == "instructor@global.academy").first()
+        if not instructor:
+            instructor = models.User(
+                name="Budi Santoso",
+                email="instructor@global.academy",
+                password=get_password_hash("password123"),
+                role="instructor"
             )
-            db.add(user)
-        print("✅ 10 user dummy berhasil dibuat. Pass: password")
-    else:
-        print(f"⚠️  User dummy udah ada {user_count} biji, skip")
+            db.add(instructor)
+            db.commit()
+            db.refresh(instructor)
+            print("Instructor created")
 
-    db.commit()
-    db.close()
-    print("\n🔥 SEEDER SELESAI JHON 🔥")
+        # 2. Bikin Course kalo belum ada
+        course = db.query(models.Course).filter(models.Course.slug == "belajar-fastapi-pro").first()
+        if not course:
+            course = models.Course(
+                title="Belajar FastAPI dari 0 Jadi Pro",
+                slug="belajar-fastapi-pro",
+                description="Course terlengkap buat jago FastAPI + deploy ke Railway",
+                price=199000,
+                thumbnail_url="https://i.imgur.com/8x8x8x8.png",
+                instructor_id=instructor.id
+            )
+            db.add(course)
+            db.commit()
+            db.refresh(course)
+            print("Course created")
+
+            # 3. Bikin Module 1
+            module1 = models.Module(title="Pengenalan FastAPI", order=1, course_id=course.id)
+            db.add(module1)
+            db.commit()
+            db.refresh(module1)
+
+            # 4. Bikin Lesson di Module 1
+            lessons = [
+                models.Lesson(title="Apa itu FastAPI?", content_type="video", content_url="https://youtube.com/watch?v=xxx", duration_minutes=10, order=1, module_id=module1.id),
+                models.Lesson(title="Install Python & VSCode", content_type="video", content_url="https://youtube.com/watch?v=yyy", duration_minutes=15, order=2, module_id=module1.id),
+            ]
+            db.add_all(lessons)
+            db.commit()
+            print("Module + Lessons created")
+
+        print("Seeding Global Academy done")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
-    seed_admin()
+    seed_data()
