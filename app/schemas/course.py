@@ -11,6 +11,9 @@ class CourseBase(BaseModel):
 class CourseCreate(CourseBase):
     pass
 
+class CourseUpdate(CourseBase):
+    title: Optional[str] = None
+
 class CourseResponse(CourseBase):
     id: int
     slug: str
