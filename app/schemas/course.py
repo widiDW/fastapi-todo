@@ -1,32 +1,22 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
 
-# Schema buat bikin course baru
-class CourseCreate(BaseModel):
-    title: str = Field(..., min_length=3, max_length=255)
-    description: Optional[str] = None
-    price: int = Field(default=0, ge=0) # ge=0 artinya ga boleh minus
-    thumbnail_url: Optional[str] = None
-
-# Schema buat update course
-class CourseUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str] = None
-    price: Optional[int] = Field(None, ge=0)
-    thumbnail_url: Optional[str] = None
-
-# Schema buat response ke user
-class CourseResponse(BaseModel):
-    id: int
+class CourseBase(BaseModel):
     title: str
+    description: Optional[str] = None
+    price: Optional[int] = 0
+    thumbnail_url: Optional[str] = None
+
+class CourseCreate(CourseBase):
+    pass
+
+class CourseResponse(CourseBase):
+    id: int
     slug: str
-    description: Optional[str]
-    price: int
-    thumbnail_url: Optional[str]
     instructor_id: int
     created_at: datetime
     updated_at: datetime
 
     class Config:
-        from_attributes = True # Biar bisa convert dari SQLAlchemy model
+        from_attributes = True

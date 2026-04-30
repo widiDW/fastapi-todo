@@ -1,7 +1,4 @@
-from .user import User
-from .course import Course
-from .enrollment import Enrollment
-from .module import Module
-from .lesson import Lesson
+from.user import User
+from.course import Course
 
-__all__ = ["User", "Course", "Enrollment", "Module", "Lesson"]
+__all__ = ["User", "Course"]
