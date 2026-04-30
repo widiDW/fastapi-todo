@@ -16,6 +16,9 @@ class Course(Base):
     
     instructor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+# Relasi balik ke User/Instructor
     
     # Relasi balik ke User/Instructor
     instructor = relationship("User", back_populates="courses")
