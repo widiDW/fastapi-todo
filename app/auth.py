@@ -6,11 +6,17 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from .models.user import User
 from .database import get_db
+from fastapi import APIRouter
 
 SECRET_KEY = "ganti_ini_pake_random_64_karakter_jhon"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = HTTPBearer()
