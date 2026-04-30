@@ -9,6 +9,13 @@ class CourseCreate(BaseModel):
     price: int = Field(default=0, ge=0) # ge=0 artinya ga boleh minus
     thumbnail_url: Optional[str] = None
 
+# Schema buat update course
+class CourseUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=3, max_length=255)
+    description: Optional[str] = None
+    price: Optional[int] = Field(None, ge=0)
+    thumbnail_url: Optional[str] = None
+
 # Schema buat response ke user
 class CourseResponse(BaseModel):
     id: int
@@ -19,6 +26,7 @@ class CourseResponse(BaseModel):
     thumbnail_url: Optional[str]
     instructor_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True # Biar bisa convert dari SQLAlchemy model
