@@ -1,4 +1,4 @@
-from.user import User
-from.todo import Todo
+from .user import User
+from .course import Course
 
-__all__ = ["User", "Todo"]
+__all__ = ["User", "Course"]

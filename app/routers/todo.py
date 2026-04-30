@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 from..database import get_db
-from..models.todo import Todo
+from..models.course import Todo
 from..models.user import User
 from..schemas.todo import TodoCreate, TodoResponse, TodoUpdate
 from..auth import get_current_user
