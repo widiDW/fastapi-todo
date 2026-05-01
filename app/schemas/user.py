@@ -5,7 +5,6 @@ from app.models.user import UserRole
 class UserBase(BaseModel):
     name: str
     email: EmailStr
-    role: Optional[str] = "student"
     avatar_url: Optional[str] = None
 
 class UserOut(BaseModel):
