@@ -19,6 +19,7 @@ class Course(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     instructor = relationship("User", back_populates="courses")
+    chapters = relationship("Chapter", back_populates="course", cascade="all, delete-orphan")
 
     @validates('title')
     def generate_slug(self, key, title):
