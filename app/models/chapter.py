@@ -6,7 +6,7 @@ class Chapter(Base):
     __tablename__ = "chapters"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    order = Column(Integer, default=0) # Buat urutan chapter
+    order = Column(Integer, default=0)
     course_id = Column(Integer, ForeignKey("courses.id"))
 
     course = relationship("Course", back_populates="chapters")
@@ -18,7 +18,7 @@ class Lesson(Base):
     title = Column(String, nullable=False)
     video_url = Column(String, nullable=True)
     content = Column(Text, nullable=True)
-    order = Column(Integer, default=0) # Buat urutan lesson
+    order = Column(Integer, default=0)
     chapter_id = Column(Integer, ForeignKey("chapters.id"))
 
     chapter = relationship("Chapter", back_populates="lessons")
