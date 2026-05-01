@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
-from app.models.user import User
+from app.models import User, Enrollment
 from app.schemas.user import UserCreate, UserResponse
-from app.core.security import get_password_hash, get_current_user # INI YG KETINGGALAN
+from app.core.security import get_password_hash, get_current_user
+from app.schemas.course import CourseOut
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -26,3 +27,17 @@ def get_users(db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)): # UDAH BISA SEKARANG
     return current_user
+
+@router.get("/me/courses", response_model=list[CourseOut])
+def get_my_courses(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Ambil semua enrollment user + join data course nya
+    enrollments = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.id
+    ).options(joinedload(Enrollment.course)).all()
+
+    # Ambil object course aja dari enrollment
+    courses = [enrollment.course for enrollment in enrollments]
+    return courses
