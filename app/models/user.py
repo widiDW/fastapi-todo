@@ -1,7 +1,12 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import relationship
 from app.database import Base
 
+class UserRole(str, enum.Enum):
+    student = "student"
+    instructor = "instructor"
+    admin = "admin"
+    
 class User(Base):
     __tablename__ = "users"
 
@@ -11,6 +16,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     role = Column(String(50), default="student")
     avatar_url = Column(String(500), nullable=True)
+    role = Column(Enum(UserRole), default=UserRole.student, nullable=False)
 
     courses = relationship("Course", back_populates="instructor")
     enrollments = relationship("Enrollment", back_populates="user", cascade="all, delete-orphan")

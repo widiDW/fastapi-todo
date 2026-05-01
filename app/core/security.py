@@ -5,7 +5,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User
+from app.models.user import User, UserRole
 import os
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -53,3 +53,18 @@ def require_student(current_user: User = Depends(get_current_user)):
             detail="Only students can access this"
         )
     return current_user
+
+def require_role(allowed_roles: list[UserRole]):
+    def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required roles: {[r.value for r in allowed_roles]}"
+            )
+        return current_user
+    return role_checker
+
+# Shortcut biar gampang dipake
+require_student = require_role([UserRole.student])
+require_instructor = require_role([UserRole.instructor, UserRole.admin]) # admin bisa akses semua
+require_admin = require_role([UserRole.admin])
