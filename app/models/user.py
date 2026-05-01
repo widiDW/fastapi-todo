@@ -13,3 +13,4 @@ class User(Base):
     avatar_url = Column(String(500), nullable=True)
 
     courses = relationship("Course", back_populates="instructor")
+    enrollments = relationship("Enrollment", back_populates="user", cascade="all, delete-orphan")

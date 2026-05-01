@@ -20,6 +20,7 @@ class Course(Base):
 
     instructor = relationship("User", back_populates="courses")
     chapters = relationship("Chapter", back_populates="course", cascade="all, delete-orphan")
+    enrollments = relationship("Enrollment", back_populates="course", cascade="all, delete-orphan")
 
     @validates('title')
     def generate_slug(self, key, title):
