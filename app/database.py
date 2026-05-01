@@ -10,7 +10,8 @@ DB_PASS = os.getenv("DB_PASS")  # ""
 DB_NAME = os.getenv("DB_NAME")  # db_python
 DB_PORT = os.getenv("DB_PORT")  # 3306
 
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+#DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}" --> local
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
