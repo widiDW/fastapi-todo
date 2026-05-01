@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.models import User, Enrollment
-#from app.models.enrollment import Enrollment
 from app.schemas.user import UserCreate, UserResponse
-from app.core.security import get_password_hash, get_current_user
+from app.core.security import get_password_hash, get_current_user, require_student
 from app.schemas.course import CourseOut
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -32,7 +31,7 @@ def read_users_me(current_user: User = Depends(get_current_user)): # UDAH BISA S
 @router.get("/me/courses", response_model=list[CourseOut])
 def get_my_courses(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_student)
 ):
     # Ambil semua enrollment user + join data course nya
     enrollments = db.query(Enrollment).filter(
