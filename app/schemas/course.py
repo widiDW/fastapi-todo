@@ -20,6 +20,12 @@ class CourseResponse(CourseBase):
     instructor_id: int
     created_at: datetime
     updated_at: datetime
+    
+class CourseOut(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
+    price: float | None = None
 
     class Config:
         from_attributes = True
