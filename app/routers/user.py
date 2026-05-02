@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
-from app.models import User, Enrollment
-from app.schemas.user import UserCreate, UserResponse
+from app.models.user import User
+from app.models.enrollment import Enrollment
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.core.security import get_password_hash, get_current_user, require_student
 from app.schemas.course import CourseOut
 
@@ -21,7 +22,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         avatar_url=user.avatar_url if hasattr(user, 'avatar_url') else None,
         hashed_password=hashed_pw,
-        role="student" # <- PAKSA HARDCODE, USER GA BISA NGUBAH
+        role="student"
     )
     
     db.add(new_user)
@@ -50,3 +51,38 @@ def get_my_courses(
     # Ambil object course aja dari enrollment
     courses = [enrollment.course for enrollment in enrollments]
     return courses
+
+from app.core.deps import require_role
+
+@router.put("/users/{user_id}", response_model=UserResponse)
+def update_user(
+    user_id: int,
+    user_update: UserUpdate, # schema tanpa password + role
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("superadmin")) # <- cuma superadmin
+):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # update field yang boleh diupdate
+    for field, value in user_update.dict(exclude_unset=True).items():
+        setattr(db_user, field, value)
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("superadmin")) # <- cuma superadmin
+):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(db_user)
+    db.commit()
+    return

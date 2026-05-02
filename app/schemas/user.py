@@ -15,6 +15,11 @@ class UserOut(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    avatar_url: Optional[str] = None
+    
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
