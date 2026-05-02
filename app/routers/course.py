@@ -5,8 +5,22 @@ from app.models.course import Course # INI YG KETINGGALAN
 from app.models.user import User
 from app.schemas.course import CourseCreate, CourseUpdate, CourseResponse
 from app.core.security import get_current_user # INI JUGA
+from typing import List
 
 router = APIRouter()
+
+@router.get("/instructor/courses", response_model=List[CourseResponse])
+def get_my_instructor_courses(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Cek role
+    if current_user.role!= "instructor":
+        raise HTTPException(status_code=403, detail="Only instructors can access this")
+
+    # Query course milik instructor ini
+    courses = db.query(Course).filter(Course.instructor_id == current_user.id).all()
+    return courses
 
 @router.post("/courses", response_model=CourseResponse, status_code=status.HTTP_201_CREATED)
 def create_course(
