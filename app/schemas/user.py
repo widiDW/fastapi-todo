@@ -24,10 +24,12 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     id: int
-    class Config:
-        from_attributes = True
+    name: str
+    email: EmailStr
+    avatar_url: Optional[str] = None
+    role: UserRole
 
 class Token(BaseModel):
     access_token: str

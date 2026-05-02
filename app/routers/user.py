@@ -30,9 +30,13 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@router.get("/users", response_model=list[UserResponse])
-def get_users(db: Session = Depends(get_db)):
-    return db.query(User).all()
+@router.get("/users", response_model=list[UserResponse]) # <- harus pake UserResponse
+def get_users(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("superadmin"))
+):
+    users = db.query(User).all()
+    return users
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)): # UDAH BISA SEKARANG

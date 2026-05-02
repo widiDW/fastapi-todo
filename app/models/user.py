@@ -15,7 +15,6 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)
-    role = Column(String(50), default="student")
     avatar_url = Column(String(500), nullable=True)
     role = Column(Enum(UserRole), default=UserRole.student, nullable=False)
 
