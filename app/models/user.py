@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -7,6 +7,7 @@ class UserRole(str, enum.Enum):
     student = "student"
     instructor = "instructor"
     admin = "admin"
+    superadmin = "superadmin"
     
 class User(Base):
     __tablename__ = "users"
@@ -16,7 +17,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)
     avatar_url = Column(String(500), nullable=True)
-    role = Column(Enum(UserRole), default=UserRole.student, nullable=False)
+    role = Column(String(20), default=UserRole.student.value, nullable=False)
 
     courses = relationship("Course", back_populates="instructor")
     enrollments = relationship("Enrollment", back_populates="user", cascade="all, delete-orphan")
