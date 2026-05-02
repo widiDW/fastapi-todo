@@ -2,21 +2,6 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
-# Chapter
-class ChapterBase(BaseModel):
-    title: str
-    order: Optional[int] = 0
-
-class ChapterCreate(ChapterBase):
-    pass
-
-class ChapterResponse(ChapterBase):
-    id: int
-    course_id: int
-    lessons: List[LessonResponse] = []
-    class Config:
-        orm_mode = True
-
 # Lesson
 class LessonBase(BaseModel):
     title: str
@@ -31,4 +16,19 @@ class LessonResponse(LessonBase):
     id: int
     chapter_id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
+        
+# Chapter
+class ChapterBase(BaseModel):
+    title: str
+    order: Optional[int] = 0
+
+class ChapterCreate(ChapterBase):
+    pass
+
+class ChapterResponse(ChapterBase):
+    id: int
+    course_id: int
+    lessons: List[LessonResponse] = []
+    class Config:
+        from_attributes = True
