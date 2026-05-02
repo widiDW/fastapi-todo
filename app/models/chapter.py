@@ -5,7 +5,7 @@ from app.database import Base
 class Chapter(Base):
     __tablename__ = "chapters"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
+    title = Column(String(255), nullable=False)
     order = Column(Integer, default=0)
     course_id = Column(Integer, ForeignKey("courses.id"))
 
@@ -15,8 +15,8 @@ class Chapter(Base):
 class Lesson(Base):
     __tablename__ = "lessons"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    video_url = Column(String, nullable=True)
+    title = Column(String(255), nullable=False)
+    video_url = Column(String(255), nullable=True)
     content = Column(Text, nullable=True)
     order = Column(Integer, default=0)
     chapter_id = Column(Integer, ForeignKey("chapters.id"))
