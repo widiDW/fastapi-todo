@@ -18,7 +18,7 @@ app.include_router(user_router, prefix="/api/v1", tags=["Users"])
 app.include_router(course_router, prefix="/api/v1", tags=["Courses"])
 app.include_router(auth_router, prefix="/api/v1", tags=["Auth"])
 
-app.include_router(user.router, prefix="/api/v1", tags=["users"])
+app.include_router(user.router, tags=["users"])
 app.include_router(course.router, prefix="/api/v1", tags=["courses"])
 app.include_router(chapter.router, prefix="/api/v1", tags=["chapters"])
 app.include_router(enrollment.router, prefix="/api/v1", tags=["enrollments"])
