@@ -6,6 +6,7 @@ from app.models.enrollment import Enrollment
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.core.security import get_password_hash, get_current_user, require_student
 from app.schemas.course import CourseOut
+from app.core.deps import require_role
 
 router = APIRouter(prefix="/users", tags=["users"])
 
