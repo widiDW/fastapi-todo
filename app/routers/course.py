@@ -7,7 +7,7 @@ from app.schemas.course import CourseCreate, CourseUpdate, CourseResponse
 from app.core.security import get_current_user # INI JUGA
 from typing import List
 
-router = APIRouter(prefix="/api/v1/courses", tags=["courses"])
+router = APIRouter()
 
 @router.get(
     "/instructor/courses",
