@@ -15,7 +15,7 @@ class ChapterResponse(ChapterBase):
     course_id: int
     lessons: List[LessonResponse] = []
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # Lesson
 class LessonBase(BaseModel):
@@ -31,4 +31,4 @@ class LessonResponse(LessonBase):
     id: int
     chapter_id: int
     class Config:
-        from_attributes = True
+        orm_mode = True
