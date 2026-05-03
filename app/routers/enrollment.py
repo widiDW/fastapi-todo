@@ -6,7 +6,7 @@ from app.models.course import Course
 from app.core.deps import require_role, get_current_user
 from app.models.user import User
 
-router = APIRouter(prefix="/api/v1/enrollments", tags=["Enrollments"])
+router = APIRouter(prefix="/enrollments", tags=["Enrollments"])
 
 @router.post(
     "/{course_id}",

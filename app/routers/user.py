@@ -7,7 +7,7 @@ from app.schemas.user import UserResponse, UserUpdate, UserCreate
 from app.core.deps import require_role
 from app.core.security import get_password_hash
 
-router = APIRouter(prefix="/api/v1/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get(
     "/",

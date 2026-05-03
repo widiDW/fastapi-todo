@@ -9,7 +9,7 @@ from app.schemas.chapter import ChapterCreate, ChapterUpdate, ChapterResponse
 from app.core.deps import require_role, get_current_user
 from app.models.user import User
 
-router = APIRouter(prefix="/api/v1/chapters", tags=["Chapters"])
+router = APIRouter(prefix="/chapters", tags=["Chapters"])
 
 @router.get(
     "/course/{course_id}",

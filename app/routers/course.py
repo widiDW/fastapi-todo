@@ -8,7 +8,7 @@ from app.schemas.course import CourseCreate, CourseUpdate, CourseResponse
 from app.core.deps import require_role, get_current_user
 from app.models.user import User
 
-router = APIRouter(prefix="/api/v1/courses", tags=["Courses"])
+router = APIRouter(prefix="/courses", tags=["Courses"])
 
 @router.get(
     "/",
