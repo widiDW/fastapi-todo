@@ -1,52 +1,121 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models.course import Course
-from app.models.chapter import Chapter, Lesson
-from app.models.user import User
-from app.schemas.chapter import ChapterCreate, ChapterResponse, LessonCreate, LessonResponse
-from app.core.security import get_current_user
+from typing import List
+from..db.database import get_db
+from..models.chapter import Chapter
+from..models.course import Course
+from..models.enrollment import Enrollment
+from..schemas.chapter import ChapterCreate, ChapterUpdate, ChapterResponse
+from..core.deps import require_role, get_current_user
+from..models.user import User
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/chapters", tags=["Chapters"])
 
-def check_course_owner(course_id: int, db: Session, current_user: User):
-    db_course = db.query(Course).filter(Course.id == course_id).first()
-    if not db_course:
-        raise HTTPException(status_code=404, detail="Course not found")
-    if db_course.instructor_id!= current_user.id and current_user.role!= "admin":
-        raise HTTPException(status_code=403, detail="Not your course")
-    return db_course
-
-# CHAPTER
-@router.post("/courses/{course_id}/chapters", response_model=ChapterResponse, status_code=status.HTTP_201_CREATED)
-def create_chapter(
+@router.get(
+    "/course/{course_id}",
+    response_model=List[ChapterResponse],
+    summary="Get chapters by course",
+    description="Student: must be enrolled. Instructor/Admin: can access any.",
+    operation_id="get_chapters_by_course"
+)
+def get_chapters_by_course(
     course_id: int,
-    chapter: ChapterCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    check_course_owner(course_id, db, current_user)
-    new_chapter = Chapter(**chapter.dict(), course_id=course_id)
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail={"error": "Course not found"})
+
+    # Student harus enroll dulu
+    if current_user.role == "student":
+        is_enrolled = db.query(Enrollment).filter(
+            Enrollment.user_id == current_user.id,
+            Enrollment.course_id == course_id
+        ).first()
+        if not is_enrolled:
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "Enroll to this course first to see chapters"}
+            )
+
+    return db.query(Chapter).filter(Chapter.course_id == course_id).order_by(Chapter.order).all()
+
+@router.post(
+    "/",
+    response_model=ChapterResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create chapter",
+    description="Instructor/Admin only. Must own the course.",
+    operation_id="create_chapter"
+)
+def create_chapter(
+    chapter_data: ChapterCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("instructor", "admin"))
+):
+    course = db.query(Course).filter(Course.id == chapter_data.course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail={"error": "Course not found"})
+
+    # Cek ownership
+    if course.instructor_id!= current_user.id and current_user.role!= "admin":
+        raise HTTPException(status_code=403, detail={"error": "You don't own this course"})
+
+    new_chapter = Chapter(**chapter_data.dict())
     db.add(new_chapter)
     db.commit()
     db.refresh(new_chapter)
     return new_chapter
 
-# LESSON
-@router.post("/chapters/{chapter_id}/lessons", response_model=LessonResponse, status_code=status.HTTP_201_CREATED)
-def create_lesson(
+@router.put(
+    "/{chapter_id}",
+    response_model=ChapterResponse,
+    summary="Update chapter",
+    description="Only the instructor who owns the course or Admin",
+    operation_id="update_chapter"
+)
+def update_chapter(
     chapter_id: int,
-    lesson: LessonCreate,
+    chapter_data: ChapterUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role("instructor", "admin"))
 ):
-    db_chapter = db.query(Chapter).filter(Chapter.id == chapter_id).first()
-    if not db_chapter:
-        raise HTTPException(status_code=404, detail="Chapter not found")
-    check_course_owner(db_chapter.course_id, db, current_user)
+    chapter = db.query(Chapter).filter(Chapter.id == chapter_id).first()
+    if not chapter:
+        raise HTTPException(status_code=404, detail={"error": "Chapter not found"})
 
-    new_lesson = Lesson(**lesson.dict(), chapter_id=chapter_id)
-    db.add(new_lesson)
+    course = db.query(Course).filter(Course.id == chapter.course_id).first()
+    if course.instructor_id!= current_user.id and current_user.role!= "admin":
+        raise HTTPException(status_code=403, detail={"error": "You don't own this course"})
+
+    for key, value in chapter_data.dict(exclude_unset=True).items():
+        setattr(chapter, key, value)
+
     db.commit()
-    db.refresh(new_lesson)
-    return new_lesson
+    db.refresh(chapter)
+    return chapter
+
+@router.delete(
+    "/{chapter_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete chapter",
+    description="Only the instructor who owns the course or Admin",
+    operation_id="delete_chapter"
+)
+def delete_chapter(
+    chapter_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("instructor", "admin"))
+):
+    chapter = db.query(Chapter).filter(Chapter.id == chapter_id).first()
+    if not chapter:
+        raise HTTPException(status_code=404, detail={"error": "Chapter not found"})
+
+    course = db.query(Course).filter(Course.id == chapter.course_id).first()
+    if course.instructor_id!= current_user.id and current_user.role!= "admin":
+        raise HTTPException(status_code=403, detail={"error": "You don't own this course"})
+
+    db.delete(chapter)
+    db.commit()
+    return
