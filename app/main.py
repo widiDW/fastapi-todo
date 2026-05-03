@@ -13,10 +13,10 @@ def on_startup():
     run_seed()
 
 app.include_router(auth_router, tags=["Auth"])
-app.include_router(user.router, tags=["users"])
-app.include_router(course.router, tags=["courses"])
-app.include_router(chapter.router, tags=["chapters"])
-app.include_router(enrollment.router, tags=["enrollments"])
+app.include_router(user.router, tags=["Users"])
+app.include_router(course.router, tags=["Courses"])
+app.include_router(chapter.router, tags=["Chapters"])
+app.include_router(enrollment.router, tags=["Enrollments"])
 
 @app.get("/")
 def root():
