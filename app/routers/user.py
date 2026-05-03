@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
+from app.models.course import Course
+from app.models.chapter import Chapter
+from app.models.enrollment import Enrollment
 from app.schemas.user import UserOut, UserUpdate
 from app.core.deps import get_current_user, require_role
 
@@ -66,24 +69,46 @@ def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "super_admin"))
 ):
-    """Delete user - admin/super_admin only with hierarchy check"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Cegah hapus diri sendiri
+    # CEGAH HAPUS DIRI SENDIRI
     if current_user.id == user_id:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
 
-    # HIERARCHY: super_admin bisa hapus semua
-    # admin ga bisa hapus super_admin
-    if user.role == "super_admin" and current_user.role!= "super_admin":
+    # CEGAH ADMIN HAPUS SUPER_ADMIN
+    if user.role == "super_admin" and current_user.role != "super_admin":
         raise HTTPException(status_code=403, detail="Cannot delete super_admin")
-
-    # admin ga bisa hapus admin lain
+    
+    # ADMIN GA BOLEH HAPUS ADMIN LAIN
     if user.role == "admin" and current_user.role == "admin":
         raise HTTPException(status_code=403, detail="Admin cannot delete another admin")
 
-    db.delete(user)
-    db.commit()
-    return {"message": f"User {user.email} deleted successfully"}
+    try:
+        # KALO INSTRUCTOR/ADMIN: HAPUS SEMUA COURSE + CHAPTER + ENROLLMENT
+        if user.role in ["instructor", "admin", "super_admin"]:
+            # 1. Ambil semua course milik user ini
+            courses = db.query(Course).filter(Course.instructor_id == user_id).all()
+            
+            for course in courses:
+                # 2. Hapus semua chapter di course ini
+                db.query(Chapter).filter(Chapter.course_id == course.id).delete()
+                # 3. Hapus semua enrollment di course ini
+                db.query(Enrollment).filter(Enrollment.course_id == course.id).delete()
+                # 4. Hapus course nya
+                db.delete(course)
+
+        # KALO STUDENT: HAPUS SEMUA ENROLLMENT NYA
+        if user.role == "student":
+            db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
+
+        # 5. TERAKHIR HAPUS USER NYA
+        db.delete(user)
+        db.commit()
+        
+        return {"message": f"User {user.email} and all related data deleted successfully"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
