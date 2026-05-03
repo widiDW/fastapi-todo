@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from..db.database import get_db
-from..models.chapter import Chapter
-from..models.course import Course
-from..models.enrollment import Enrollment
-from..schemas.chapter import ChapterCreate, ChapterUpdate, ChapterResponse
-from..core.deps import require_role, get_current_user
-from..models.user import User
+from app.database import get_db
+from app.models.chapter import Chapter
+from app.models.course import Course
+from app.models.enrollment import Enrollment
+from app.schemas.chapter import ChapterCreate, ChapterUpdate, ChapterResponse
+from app.core.deps import require_role, get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/chapters", tags=["Chapters"])
 

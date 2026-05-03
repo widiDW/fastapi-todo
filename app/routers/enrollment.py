@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from..db.database import get_db
-from..models.enrollment import Enrollment
-from..models.course import Course
-from..core.deps import require_role, get_current_user
-from..models.user import User
+from app.database import get_db
+from app.models.enrollment import Enrollment
+from app.models.course import Course
+from app.core.deps import require_role, get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/enrollments", tags=["Enrollments"])
 

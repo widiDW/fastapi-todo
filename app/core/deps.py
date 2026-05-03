@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from..models.user import User
+from app.models.user import User
 from. deps import get_current_user
 
 def require_role(*allowed_roles: str):
