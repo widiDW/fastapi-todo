@@ -66,5 +66,5 @@ def require_role(allowed_roles: list[UserRole]):
 
 # Shortcut biar gampang dipake
 require_student = require_role([UserRole.student])
-require_instructor = require_role([UserRole.instructor, UserRole.admin]) # admin bisa akses semua
-require_admin = require_role([UserRole.admin])
+require_instructor = require_role([UserRole.instructor, UserRole.admin, UserRole.superadmin]) # admin bisa akses semua
+require_admin = require_role([UserRole.admin, UserRole.superadmin])
