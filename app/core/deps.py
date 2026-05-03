@@ -1,24 +1,32 @@
 from fastapi import Depends, HTTPException, status
-from typing import TYPE_CHECKING
+from app.core.security import get_current_user
+from app.models.user import User
 
-# JANGAN IMPORT USER DI SINI LANGSUNG
-if TYPE_CHECKING:
-    from ..models.user import User
-
-from .security import get_current_user  # atau dari mana get_current_user lu
+ROLE_HIERARCHY = {
+    "student": 0,
+    "instructor": 1,
+    "admin": 2,
+    "super_admin": 3  # <- PALING TINGGI
+}
 
 def require_role(*allowed_roles: str):
-    def role_checker(current_user = Depends(get_current_user)):  # pake type hint biasa aja
-        # cek role pake getattr biar ga perlu import User
-        user_role = getattr(current_user, "role", None)
-        if user_role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "error": "Permission denied",
-                    "required_roles": list(allowed_roles),
-                    "your_role": user_role
-                }
-            )
-        return current_user
+    def role_checker(current_user: User = Depends(get_current_user)):
+        user_role = current_user.role
+        user_level = ROLE_HIERARCHY.get(user_role, -1)
+        
+        # DAPETIN LEVEL MINIMAL YANG DIBUTUHKAN
+        min_required_level = min([ROLE_HIERARCHY.get(r, 999) for r in allowed_roles])
+        
+        # SUPER_ADMIN BISA LAKUIN APA AJA
+        if user_level >= min_required_level or user_role == "super_admin":
+            return current_user
+            
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "Permission denied",
+                "required_roles": list(allowed_roles),
+                "your_role": user_role
+            }
+        )
     return role_checker
