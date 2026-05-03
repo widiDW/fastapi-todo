@@ -1,34 +1,24 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
+from datetime import datetime
 
-
-# Lesson
-class LessonBase(BaseModel):
-    title: str
-    video_url: Optional[str] = None
-    content: Optional[str] = None
-    order: Optional[int] = 0
-
-class LessonCreate(LessonBase):
-    pass
-
-class LessonResponse(LessonBase):
-    id: int
-    chapter_id: int
-    class Config:
-        from_attributes = True
-        
-# Chapter
 class ChapterBase(BaseModel):
     title: str
-    order: Optional[int] = 0
+    content: str
+    order: int
+    course_id: int
 
 class ChapterCreate(ChapterBase):
     pass
 
+class ChapterUpdate(BaseModel): # <- INI YANG KURANG
+    title: Optional[str] = None
+    content: Optional[str] = None
+    order: Optional[int] = None
+
 class ChapterResponse(ChapterBase):
     id: int
-    course_id: int
-    lessons: List[LessonResponse] = []
+    created_at: datetime
+
     class Config:
-        from_attributes = True
+        from_attributes = True # Pydantic v2
