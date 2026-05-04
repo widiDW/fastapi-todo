@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-def run_seed():
+def seed():
     db: Session = SessionLocal()
     try:
         # Cek kalau udah ada data, skip
