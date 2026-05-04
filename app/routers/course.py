@@ -19,11 +19,16 @@ router = APIRouter(prefix="/courses", tags=["Courses"])
 )
 def get_courses(
     db: Session = Depends(get_db),
-    published: bool = Query(True, description="Filter by published status"),
+    published: bool = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100)
 ):
-    return db.query(Course).filter(Course.is_published == published).offset(skip).limit(limit).all()
+    query = db.query(Course)
+    
+    if published is not None:
+        query = query.filter(Course.published == published) # <- sekarang ada kolomnya
+    
+    return query.offset(skip).limit(limit).all()
 
 @router.get(
     "/instructor/my-courses",
@@ -34,7 +39,7 @@ def get_courses(
 )
 def get_my_courses(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("instructor", "admin"))
+    current_user: User = Depends(require_role("instructor", "admin", "super_admin"))
 ):
     return db.query(Course).filter(Course.instructor_id == current_user.id).all()
 
@@ -79,7 +84,7 @@ def get_course(
 def create_course(
     course_data: CourseCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("instructor", "admin"))
+    current_user: User = Depends(require_role("instructor", "admin", "super_admin"))
 ):
     new_course = Course(**course_data.dict(), instructor_id=current_user.id)
     db.add(new_course)
@@ -98,13 +103,13 @@ def update_course(
     course_id: int,
     course_data: CourseUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("instructor", "admin"))
+    current_user: User = Depends(require_role("instructor", "admin", "super_admin"))
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail={"error": "Course not found"})
 
-    if course.instructor_id!= current_user.id and current_user.role!= "admin":
+    if course.instructor_id != current_user.id and current_user.role not in ["admin", "super_admin"]:
         raise HTTPException(status_code=403, detail={"error": "You don't own this course"})
 
     for key, value in course_data.dict(exclude_unset=True).items():
@@ -124,7 +129,7 @@ def update_course(
 def delete_course(
     course_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("instructor", "admin"))
+    current_user: User = Depends(require_role("instructor", "admin", "super_admin"))
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:

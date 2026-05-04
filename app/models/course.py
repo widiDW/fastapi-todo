@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql import func
 from slugify import slugify
@@ -13,6 +13,8 @@ class Course(Base):
     description = Column(Text)
     price = Column(Integer, default=0)
     thumbnail_url = Column(String(500), nullable=True)
+    
+    published = Column(Boolean, default=False, index=True)
 
     instructor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

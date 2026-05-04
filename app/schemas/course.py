@@ -8,11 +8,19 @@ class CourseBase(BaseModel):
     price: Optional[int] = 0
     thumbnail_url: Optional[str] = None
 
-class CourseCreate(CourseBase):
-    pass
+class CourseCreate(BaseModel):
+    title: str
+    description: str | None = None
+    price: int = 0
+    thumbnail_url: str | None = None
+    published: bool = False 
 
-class CourseUpdate(CourseBase):
-    title: Optional[str] = None
+class CourseUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    price: int | None = None
+    thumbnail_url: str | None = None
+    published: bool | None = None 
 
 class CourseResponse(CourseBase):
     id: int
