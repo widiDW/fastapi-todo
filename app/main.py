@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.database import engine, Base
 from app.auth import router as auth_router
-from app.db.seed import seed
+#from app.db.seed import seed
 from app.routers import user, course, chapter, enrollment
 
 Base.metadata.create_all(bind=engine)
